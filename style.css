@@ -3,6 +3,13 @@
   padding: 0;
 }
 
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  
+}
+
 .header {
   background-color: #9F9F9F;
   padding: 10px 0;
@@ -41,4 +48,56 @@
 .wrapper-info div {
   font-size: 16px; 
   color: #666; 
+}
+
+main {
+  flex: 1 1 auto;
+}
+
+
+
+
+
+.footer {
+  background-color: #333; 
+  color: #fff;
+  padding: 20px 0; 
+}
+
+
+.container {
+  width: 90%; 
+  margin: 0 auto; 
+  max-width: 1200px;
+}
+
+
+.footer-content {
+  display: flex; 
+  justify-content: space-between; 
+  flex-wrap: wrap; 
+}
+
+
+.footer-section {
+  flex: 1;
+  margin: 10px; 
+}
+
+
+.footer-section h3 {
+  margin-bottom: 10px; 
+}
+
+
+.footer-section a {
+  color: #fff; 
+  text-decoration: none; 
+  margin-right: 10px; 
+}
+
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 20px; 
 }
