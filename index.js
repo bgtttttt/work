@@ -21,3 +21,62 @@ async function course() {
 function init() {temp(); course();}
 
 document.addEventListener('DOMContentLoaded', () => init())
+
+document.addEventListener('DOMContentLoaded', () => {
+    const todoForm = document.getElementById('todo-form');
+    const todoInput = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
+
+    todoForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const taskText = todoInput.value.trim();
+        if (taskText === '') return;
+
+        addTask(taskText);
+        todoInput.value = '';
+    });
+
+    function addTask(taskText) {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${taskText}</span>
+            <div class="buttons">
+                <button class="edit">Edit</button>
+                <button class="delete">Delete</button>
+            </div>
+        `;
+        todoList.appendChild(li);
+
+        const editButton = li.querySelector('button.edit');
+        const deleteButton = li.querySelector('button.delete');
+        const taskSpan = li.querySelector('span');
+
+        editButton.addEventListener('click', () => {
+            li.classList.add('editing');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = taskSpan.textContent;
+            li.replaceChild(input, taskSpan);
+            input.focus();
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save';
+            saveButton.classList.add('save');
+            li.querySelector('.buttons').appendChild(saveButton);
+
+            saveButton.addEventListener('click', () => {
+                const newText = input.value.trim();
+                if (newText === '') return;
+
+                taskSpan.textContent = newText;
+                li.replaceChild(taskSpan, input);
+                li.classList.remove('editing');
+                li.querySelector('.buttons').removeChild(saveButton);
+            });
+        });
+
+        deleteButton.addEventListener('click', () => {
+            todoList.removeChild(li);
+        });
+    }
+});
