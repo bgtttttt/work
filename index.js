@@ -50,8 +50,15 @@ function init() {
 }
 init()
 
-
 const inputs = document.getElementsByClassName('input');
+{
+  const daywrapper = document.querySelector("#days-wrapper");
+  let days = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]);
+  days = days.map((el) => {
+   return [...el.children].filter((e) => [...inputs].includes(e))
+  })
+}
+
 document.querySelector(".main").addEventListener('contextmenu', e => { 
   e.preventDefault()
 });
@@ -83,39 +90,97 @@ function close() {
   }
 }
 
-[...inputs].forEach((e,i) => {
-  document.addEventListener('mousedown', event => {
-    if (e == event.target) {
-      let coords = getCoords(e);
-      let shiftX = event.pageX - coords.left; let shiftY = event.pageY - coords.top;
 
-      let elem = e.cloneNode(true);
-      elem.innerHTML = "";
-      e.insertAdjacentElement("afterend", elem);
-      ///Добавить перезадачу эвента
+[...inputs].forEach((e) => {
+  let pressTimer; 
+  let isDragging = false;
 
-      e.style.position = 'absolute';
-      e.style.backgroundColor = "red"
-      document.body.appendChild(e);
-      moveAt(event);
-      e.style.zIndex = 1000;
-      function moveAt(event) {
-        e.style.left = event.pageX - shiftX + 'px';
-        e.style.top = event.pageY - shiftY + 'px';
-      }
-      document.onmousemove = function(e) {moveAt(e);};
-      e.onmouseup = function() {
-        document.onmousemove = null;
-        e.onmouseup = null;
-      };
-      e.addEventListener("dragstart", ev => ev.preventDefault())
+  e.addEventListener('mousedown', (event) => {
+    pressTimer = setTimeout(() => {
+      isDragging = true; 
+      startDrag(e, event); 
+    }, 100); 
+  });
+
+  e.addEventListener('mouseup', () => {
+    clearTimeout(pressTimer);
+
+    if (!isDragging) {
+      e.focus(); 
     }
-  })  
-})
-function getCoords(elem) {   
-  var box = elem.getBoundingClientRect();
+    isDragging = false; 
+  });
+
+  e.addEventListener('mousemove', () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+    }
+  });
+});
+function startDrag(e, event) {
+  let coords = getCoords(e);
+  let shiftX = event.pageX - coords.left;
+  let shiftY = event.pageY - coords.top;
+
+  let elem = e.cloneNode(true);
+  elem.innerHTML = "";
+  let holder = e.value;
+  e.value = "";
+  e.insertAdjacentElement("afterend", elem);
+
+  elem.style.position = 'absolute';
+  elem.style.backgroundColor = "#f0f0f0";
+  elem.style.border = "2px solid #b0b0b0";
+  elem.style.minWidth = window.getComputedStyle(e).width;
+
+  document.body.appendChild(elem);
+  moveAt(event);
+  elem.style.zIndex = 1000;
+
+  function moveAt(event) {
+    elem.style.left = event.pageX - shiftX + 'px';
+    elem.style.top = event.pageY - shiftY + 'px';
+  }
+
+  let onElem = null;
+  document.onmousemove = function (e) {
+    if ([...inputs].includes(document.elementsFromPoint(e.clientX, e.clientY)[1])) {
+      if (onElem != document.elementsFromPoint(e.clientX, e.clientY)[1]) {
+        if (onElem !== null) {
+          onElem.style.border = "none";
+        }
+        onElem = document.elementsFromPoint(e.clientX, e.clientY)[1];
+      }
+      onElem.style.border = "3px solid black";
+    }
+
+    moveAt(e);
+  };
+
+  elem.onmouseup = function (s) {
+    if (onElem) {
+      onElem.style.border = "none";
+      if ([...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {
+        console.log("in");
+        (document.elementsFromPoint(s.clientX, s.clientY)[1]).value = holder
+      } else {
+        e.value = holder;
+      }
+    }
+    elem.remove();
+
+    document.onmousemove = null;
+    e.onmouseup = null;
+  };
+
+  elem.addEventListener("dragstart", (ev) => ev.preventDefault());
+}
+function getCoords(elem) {
+  let box = elem.getBoundingClientRect();
   return {
     top: box.top,
     left: box.left
   };
 }
+
+
