@@ -51,13 +51,13 @@ function init() {
 init()
 
 const inputs = document.getElementsByClassName('input');
-{
-  const daywrapper = document.querySelector("#days-wrapper");
-  let days = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]);
-  days = days.map((el) => {
-   return [...el.children].filter((e) => [...inputs].includes(e))
-  })
-}
+const daywrapper = document.querySelector("#days-wrapper");
+
+let days = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]);
+days = days.map((el) => {
+ return [...el.children].filter((e) => [...inputs].includes(e))
+})
+
 
 document.querySelector(".main").addEventListener('contextmenu', e => { 
   e.preventDefault()
@@ -96,10 +96,12 @@ function close() {
   let isDragging = false;
 
   e.addEventListener('mousedown', (event) => {
-    pressTimer = setTimeout(() => {
-      isDragging = true; 
-      startDrag(e, event); 
-    }, 100); 
+    if (event.button === 0) {
+      pressTimer = setTimeout(() => {
+        isDragging = true; 
+        startDrag(e, event); 
+      }, 100); 
+    }
   });
 
   e.addEventListener('mouseup', () => {
@@ -142,34 +144,45 @@ function startDrag(e, event) {
     elem.style.top = event.pageY - shiftY + 'px';
   }
 
+  let canCall = true
   let onElem = null;
   document.onmousemove = function (e) {
     if ([...inputs].includes(document.elementsFromPoint(e.clientX, e.clientY)[1])) {
       if (onElem != document.elementsFromPoint(e.clientX, e.clientY)[1]) {
         if (onElem !== null) {
           onElem.style.border = "none";
+          canCall = true
+          reRazdv(onElem)
         }
         onElem = document.elementsFromPoint(e.clientX, e.clientY)[1];
       }
       onElem.style.border = "3px solid black";
+      if (onElem.value !== "" && canCall) {
+        canCall = false
+        razdv(onElem);
+      }
+      
     }
 
     moveAt(e);
   };
 
   elem.onmouseup = function (s) {
+    
+    let elementP = null;
+    if (onElem === null && [...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {onElem = document.elementsFromPoint(s.clientX, s.clientY)[1]}
     if (onElem) {
       onElem.style.border = "none";
       if ([...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {
-        console.log("in");
-        (document.elementsFromPoint(s.clientX, s.clientY)[1]).value = holder
+        elementP = document.elementsFromPoint(s.clientX, s.clientY)[1]
+        elementP.value = holder
       } else {
         e.value = holder;
       }
     }
     elem.remove();
-
-    document.onmousemove = null;
+    if (elementP) { replace(elementP); replace(e)}
+    document.onmousemove = null;  
     e.onmouseup = null;
   };
 
@@ -183,4 +196,61 @@ function getCoords(elem) {
   };
 }
 
-
+[...inputs].forEach((e,i) => {
+  e.addEventListener('change', (event) => replace(e))
+})
+function replace(e) {
+  let index = getIndex(e)
+  
+  for (let a = 0; a<days[index].length; a++) {
+    let spaces = 0;
+    for (let i = 0; i < days[index].length; i++) {
+      if (days[index][i].value === "") {
+       spaces++;
+      } else {
+        let hold = days[index][i].value
+        days[index][i].value = "";
+        days[index][i-spaces].value = hold;
+        spaces = 0;
+      }
+    }
+  }
+  
+}
+function getIndex(e) {
+  let index = [...daywrapper.children].indexOf(e.parentElement)
+  if (index === -1) {
+    index = [...daywrapper.children].indexOf(e.parentElement.parentElement) + [...e.parentElement.parentElement.children].indexOf(e.parentElement)
+  }
+  return index;
+}
+function razdv(e) {
+  let index = getIndex(e);
+  let i = days[index].indexOf(e);
+  let arr = []
+  for (let a = i; a< days[index].length; a++) {
+    if (days[index][a].value === "") {
+      break
+    }
+    arr[a-i] = days[index][a].value;
+  }
+  days[index][i].value = ""
+  for (let b = 0; b < arr.length; b++) {
+    days[index][i+1+b].value = arr[b];
+  }
+}
+function reRazdv(e) {
+  let index = getIndex(e);
+  let i = days[index].indexOf(e);
+  let arr = []
+  for (let a = i+1; a< days[index].length; a++) {
+    if (days[index][a].value === "") {
+      break
+    }
+    arr[a-i-1] = days[index][a].value;
+  }
+  days[index][i+arr.length].value = ""
+  for (let b = 0; b < arr.length; b++) {
+    days[index][i+b].value = arr[b];
+  }
+}
