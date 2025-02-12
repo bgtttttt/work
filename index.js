@@ -66,7 +66,6 @@ document.querySelector(".main").addEventListener('contextmenu', e => {
     document.addEventListener('contextmenu', event => {
         if (e == event.target) {
             document.body.insertAdjacentHTML('beforeend', `<div class="contextmenu" style="left: ${event.pageX}px; top: ${event.pageY}px">
-              <button>Delete</button>
               <button class="color">Color <div></div></button>
               </div>`)
             document.querySelector(".contextmenu").addEventListener('contextmenu', ev => { 
@@ -79,7 +78,7 @@ document.querySelector(".main").addEventListener('contextmenu', e => {
 })
 document.addEventListener('mousedown', e => {
   let toclose = document.querySelector(".contextmenu");
-  if (!(toclose==e.target | [...((toclose?.children) || [])].includes(e.target))) {close()}
+  if (!(toclose==e.target | [...((toclose?.querySelectorAll('*')) || [])].includes(e.target))) {close()}
   
 })
 window.addEventListener('resize', e => close())
@@ -128,6 +127,7 @@ function startDrag(e, event) {
   elem.innerHTML = "";
   let holder = e.value;
   e.value = "";
+  e.classList.add("not_move")
   e.insertAdjacentElement("afterend", elem);
 
   elem.style.position = 'absolute';
@@ -151,13 +151,13 @@ function startDrag(e, event) {
       if (onElem != document.elementsFromPoint(e.clientX, e.clientY)[1]) {
         if (onElem !== null) {
           onElem.style.border = "none";
-          canCall = true
+          canCall = true;
           reRazdv(onElem)
         }
         onElem = document.elementsFromPoint(e.clientX, e.clientY)[1];
       }
       onElem.style.border = "3px solid black";
-      if (onElem.value !== "" && canCall) {
+      if (canCall) {
         canCall = false
         razdv(onElem);
       }
@@ -168,18 +168,23 @@ function startDrag(e, event) {
   };
 
   elem.onmouseup = function (s) {
-    
     let elementP = null;
-    if (onElem === null && [...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {onElem = document.elementsFromPoint(s.clientX, s.clientY)[1]}
-    if (onElem) {
-      onElem.style.border = "none";
-      if ([...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {
-        elementP = document.elementsFromPoint(s.clientX, s.clientY)[1]
-        elementP.value = holder
-      } else {
-        e.value = holder;
+    if (document.elementsFromPoint(s.clientX, s.clientY)[1].id === "close") {
+      holder = ""
+    } else {
+      if (onElem === null && [...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {onElem = document.elementsFromPoint(s.clientX, s.clientY)[1]}
+      if (onElem) {
+        onElem.style.border = "none";
+        if ([...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {
+          elementP = document.elementsFromPoint(s.clientX, s.clientY)[1]
+          elementP.value = holder
+        } else {
+          e.value = holder;
+        }
       }
     }
+
+    e.classList.remove("not_move")
     elem.remove();
     if (elementP) { replace(elementP); replace(e)}
     document.onmousemove = null;  
@@ -224,22 +229,30 @@ function getIndex(e) {
   }
   return index;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 function razdv(e) {
+  console.log("in")
+  replaceWithNotMove(e);
+  if (e.classList.contains("not_move")) {return;}
   let index = getIndex(e);
   let i = days[index].indexOf(e);
-  let arr = []
+  let arr = []; pl = 0
   for (let a = i; a< days[index].length; a++) {
+    if (days[index][a].classList.contains("not_move")) {pl++; continue}
     if (days[index][a].value === "") {
       break
     }
-    arr[a-i] = days[index][a].value;
+    arr[a-i-pl] = days[index][a].value;
   }
-  days[index][i].value = ""
+  days[index][i].value = ""; let k = 0;
   for (let b = 0; b < arr.length; b++) {
-    days[index][i+1+b].value = arr[b];
+    if (days[index][i+1+b].classList.contains("not_move")) {k++}
+    days[index][i+1+b+k].value = arr[b];
   }
 }
 function reRazdv(e) {
+  if (e.classList.contains("not_move")) {return;}
   let index = getIndex(e);
   let i = days[index].indexOf(e);
   let arr = []
@@ -251,6 +264,43 @@ function reRazdv(e) {
   }
   days[index][i+arr.length].value = ""
   for (let b = 0; b < arr.length; b++) {
+    if (days[index][i+1+b].classList.contains("not_move")) {i++}
     days[index][i+b].value = arr[b];
   }
 }
+function replaceWithNotMove(e) {
+  let index = getIndex(e)
+  
+  for (let a = 0; a<days[index].length; a++) {
+    let spaces = 0;
+    for (let i = 0; i < days[index].length; i++) {
+      if (days[index][i].value === "") {
+       spaces++;
+      } else {
+        let hold = days[index][i].value
+        days[index][i].value = "";
+        if (days[index][i-spaces].classList.contains("not_move")) {spaces--}
+        days[index][i-spaces].value = hold;
+        spaces = 0;
+      }
+    }
+  }
+  
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+window.addEventListener("beforeunload", (e) => {
+  localStorage.setItem('myData', JSON.stringify([...inputs].map((el) => el.value)));
+})
+window.addEventListener("DOMContentLoaded", (e) => {
+  const storedData = localStorage.getItem('myData');
+  if (storedData) {
+      const loadedArray = JSON.parse(storedData);
+      for (let i = 0; i < loadedArray.length; i++) {
+        inputs[i].value = loadedArray[i];
+      }
+  }
+  days.forEach((e) => {
+    replace(e[1])
+  })
+})
