@@ -1,79 +1,99 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="main">
         <div class="top">
             <p>Date</p>
             <p>Buttons</p>
         </div>
-        <div id="days-wrapper">
-            <div class="mon">
-                <div class="day-header">
-                    <div class="day-top">
-                        <p>Date</p> <p>Mon</p>
-                    </div>
-                    <hr class="hr_t">
-                </div>
-            </div>
-            <div class="tue">
-                <div class="day-header">
-                    <div class="day-top">
-                        <p>Date</p> <p>Tue</p>
-                    </div>
-                    <hr class="hr_t">
-                </div>
-            </div>
-            <div class="wed">
-                <div class="day-header">
-                    <div class="day-top">
-                        <p>Date</p> <p>Wed</p>
-                    </div>
-                    <hr class="hr_t">
-                </div>
-            </div>
-            <div class="thu">
-                <div class="day-header">
-                    <div class="day-top">
-                        <p>Date</p> <p>Thu</p>
-                    </div>
-                    <hr class="hr_t">
-                </div>
-            </div>
-            <div class="fri">
-                <div class="day-header">
-                    <div class="day-top">
-                        <p>Date</p> <p>Fri</p>
-                    </div>
-                    <hr class="hr_t">
-                </div>
-            </div>
-            <div class="sat-sun">
-                <div class="sat">
+        <div id="work-place">
+            <button id="backward"><</button>
+            <div id="days-wrapper">
+                <div class="mon">
                     <div class="day-header">
                         <div class="day-top">
-                            <p>Date</p> <p>Sat</p>
+                            <p>Date</p>
+                            <p>Mon</p>
                         </div>
                         <hr class="hr_t">
                     </div>
                 </div>
-                <div class="san">
+                <div class="tue">
                     <div class="day-header">
                         <div class="day-top">
-                            <p>Date</p> <p>Sun</p>
+                            <p>Date</p>
+                            <p>Tue</p>
                         </div>
                         <hr class="hr_t">
                     </div>
                 </div>
+                <div class="wed">
+                    <div class="day-header">
+                        <div class="day-top">
+                            <p>Date</p>
+                            <p>Wed</p>
+                        </div>
+                        <hr class="hr_t">
+                    </div>
+                </div>
+                <div class="thu">
+                    <div class="day-header">
+                        <div class="day-top">
+                            <p>Date</p>
+                            <p>Thu</p>
+                        </div>
+                        <hr class="hr_t">
+                    </div>
+                </div>
+                <div class="fri">
+                    <div class="day-header">
+                        <div class="day-top">
+                            <p>Date</p>
+                            <p>Fri</p>
+                        </div>
+                        <hr class="hr_t">
+                    </div>
+                </div>
+                <div class="sat-sun">
+                    <div class="sat">
+                        <div class="day-header">
+                            <div class="day-top">
+                                <p>Date</p>
+                                <p>Sat</p>
+                            </div>
+                            <hr class="hr_t">
+                        </div>
+                    </div>
+                    <div class="san">
+                        <div class="day-header">
+                            <div class="day-top">
+                                <p>Date</p>
+                                <p>Sun</p>
+                            </div>
+                            <hr class="hr_t">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="forward">></button>
+        </div>
+        <div id="functional">
+            <div id="close">Delete</div>
+            <div class="filter-wrapper">
+                <input type="text" id="filter" placeholder="Filter">
+                <div id="filter_holder"></div>
             </div>
         </div>
-        <div id="close">Delete</div>
     </div>
     <script src="index.js"></script>
 </body>
+
 </html>
