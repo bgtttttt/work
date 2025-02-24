@@ -1,17 +1,23 @@
-const getWeek = () => {
+const getWeek = (weekOffset = 0) => {
   const date = new Date();
   const weekDay = date.getDay();
   const monthDay = date.getDate();
   const month = date.getMonth();
+  const year = date.getFullYear();
   const dates = document.getElementsByClassName("day-top");
-  const dateFields = [...dates].map(element => {
-    return element.children[0];
-  });
+  const dateFields = [...dates].map(element => element.children[0]);
   const countDayOnMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  // Проверка на високосный год
+  if ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) {
+    countDayOnMonth[1] = 29;
+  }
+
   let result = [];
   // День месяца, понедельника текущей недели
   let countMonthDay;
-  // Проверка что бы всегда начинать выстаривать текущую неделю с понедельника
+
+  // Проверка чтобы всегда начинать выставлять текущую неделю с понедельника
   if (weekDay > 1) {
     countMonthDay = monthDay - (weekDay - 1);
   } else if (weekDay === 0) {
@@ -19,23 +25,24 @@ const getWeek = () => {
   } else {
     countMonthDay = monthDay;
   }
-  // Постраение итогового массива 
+
+  // Корректировка даты на указанное количество недель
+  const targetDate = new Date(year, month, countMonthDay + weekOffset * 7);
+  const targetMonth = targetDate.getMonth();
+  const targetYear = targetDate.getFullYear();
+  const targetMonthDay = targetDate.getDate();
+
+  // Построение итогового массива
   for (let i = 0; i < 7; i++) {
-    // Если countMonthDay больше кол-ва дней в месяце
-    // дни начинаются сначала
-    if ((countMonthDay + i) > countDayOnMonth[month]) {
-      let count = countDayOnMonth[month] - (countMonthDay + (7 - 1));
-      dateFields[i].innerHTML = `${count + i}.` + (((month+2)/10 > 1)?`${ month +2}`:`0${month+2}`);
+    const currentDate = new Date(targetYear, targetMonth, targetMonthDay + i);
+    const currentMonth = currentDate.getMonth();
+    const currentMonthDay = currentDate.getDate();
 
-    } else {
-      dateFields[i].innerHTML = `${countMonthDay + i}.`+(((month+1)/10 > 1)?`${ month+1}`:`0${month+1}`);
-    }
-
+    dateFields[i].innerHTML = `${currentMonthDay}.${(currentMonth + 1) < 10 ? '0' : ''}${currentMonth + 1}`;
   }
 
-  return result
-
-}
+  return result;
+};
 getWeek()
 
 function init() {
@@ -49,6 +56,8 @@ function init() {
     });
 }
 init()
+
+plans = {}
 
 const inputs = document.getElementsByClassName('input');
 const daywrapper = document.querySelector("#days-wrapper");
@@ -66,13 +75,21 @@ document.querySelector(".main").addEventListener('contextmenu', e => {
     document.addEventListener('contextmenu', event => {
         if (e == event.target) {
             document.body.insertAdjacentHTML('beforeend', `<div class="contextmenu" style="left: ${event.pageX}px; top: ${event.pageY}px">
-              <button class="color">Color <div></div></button>
-              </div>`)
+              <div>Color</div>
+              <input type="range" id="color-slider" min="0" max="360" value="0">
+              </div>`);
+
+            const colorSlider = document.getElementById('color-slider');
+            createGradient(colorSlider);
+            colorSlider.addEventListener('input', () => {
+              const hue = colorSlider.value;
+              const color = `hsl(${hue}, 100%, 80%)`;
+              e.style.backgroundColor = color;
+            });
+
             document.querySelector(".contextmenu").addEventListener('contextmenu', ev => { 
               ev.preventDefault()
             });
-            const circle = document.querySelector(".color div");
-            circle.style.backgroundColor = (e.style.backgroundColor || "white")
         }
     })
 })
@@ -117,6 +134,8 @@ function close() {
       clearTimeout(pressTimer);
     }
   });
+
+  e.addEventListener('change', (event) => {upd_filters()})
 });
 function startDrag(e, event) {
   let coords = getCoords(e);
@@ -125,13 +144,14 @@ function startDrag(e, event) {
 
   let elem = e.cloneNode(true);
   elem.innerHTML = "";
+  elem.style.backgroundColor = e.style.backgroundColor;
   let holder = e.value;
   e.value = "";
+  e.style.backgroundColor = "white"
   e.classList.add("not_move")
   e.insertAdjacentElement("afterend", elem);
 
   elem.style.position = 'absolute';
-  elem.style.backgroundColor = "#f0f0f0";
   elem.style.border = "2px solid #b0b0b0";
   elem.style.minWidth = window.getComputedStyle(e).width;
 
@@ -170,16 +190,21 @@ function startDrag(e, event) {
   elem.onmouseup = function (s) {
     let elementP = null;
     if (document.elementsFromPoint(s.clientX, s.clientY)[1].id === "close") {
-      holder = ""
+      holder = "";
+      days.forEach((d) => { replace(d[0]); });
+      [...inputs].forEach((el) => {el.style.border = "none"});
+      upd_filters()
     } else {
       if (onElem === null && [...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {onElem = document.elementsFromPoint(s.clientX, s.clientY)[1]}
       if (onElem) {
         onElem.style.border = "none";
         if ([...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {
           elementP = document.elementsFromPoint(s.clientX, s.clientY)[1]
-          elementP.value = holder
+          elementP.value = holder;
+          elementP.style.backgroundColor = elem.style.backgroundColor;
         } else {
           e.value = holder;
+          e.style.backgroundColor = elem.style.backgroundColor;
         }
       }
     }
@@ -213,9 +238,9 @@ function replace(e) {
       if (days[index][i].value === "") {
        spaces++;
       } else {
-        let hold = days[index][i].value
-        days[index][i].value = "";
-        days[index][i-spaces].value = hold;
+        let hold = days[index][i].value; holdBG = days[index][i].style.backgroundColor;
+        days[index][i].value = ""; days[index][i].style.backgroundColor = "white";
+        days[index][i-spaces].value = hold; days[index][i-spaces].style.backgroundColor = holdBG;
         spaces = 0;
       }
     }
@@ -232,40 +257,41 @@ function getIndex(e) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 function razdv(e) {
-  console.log("in")
   replaceWithNotMove(e);
   if (e.classList.contains("not_move")) {return;}
   let index = getIndex(e);
   let i = days[index].indexOf(e);
-  let arr = []; pl = 0
+  let arr = [], pl = 0, arrBG = []
   for (let a = i; a< days[index].length; a++) {
     if (days[index][a].classList.contains("not_move")) {pl++; continue}
     if (days[index][a].value === "") {
       break
     }
-    arr[a-i-pl] = days[index][a].value;
+    arr[a-i-pl] = days[index][a].value; arrBG[a-i-pl] = days[index][a].style.backgroundColor;
   }
-  days[index][i].value = ""; let k = 0;
+  days[index][i].value = ""; days[index][i].style.backgroundColor = "white"; let k = 0;
   for (let b = 0; b < arr.length; b++) {
     if (days[index][i+1+b].classList.contains("not_move")) {k++}
     days[index][i+1+b+k].value = arr[b];
+    days[index][i+1+b+k].style.backgroundColor = arrBG[b];
   }
 }
 function reRazdv(e) {
   if (e.classList.contains("not_move")) {return;}
   let index = getIndex(e);
   let i = days[index].indexOf(e);
-  let arr = []
+  let arr = [], arrBG = [];
   for (let a = i+1; a< days[index].length; a++) {
     if (days[index][a].value === "") {
       break
     }
-    arr[a-i-1] = days[index][a].value;
+    arr[a-i-1] = days[index][a].value; arrBG[a-i-1] = days[index][a].style.backgroundColor;
   }
-  days[index][i+arr.length].value = ""
+  days[index][i+arr.length].value = ""; days[index][i+arr.length].style.backgroundColor = "white";
   for (let b = 0; b < arr.length; b++) {
     if (days[index][i+1+b].classList.contains("not_move")) {i++}
     days[index][i+b].value = arr[b];
+    days[index][i+b].style.backgroundColor = arrBG[b];
   }
 }
 function replaceWithNotMove(e) {
@@ -277,10 +303,10 @@ function replaceWithNotMove(e) {
       if (days[index][i].value === "") {
        spaces++;
       } else {
-        let hold = days[index][i].value
-        days[index][i].value = "";
+        let hold = days[index][i].value, holdBG = days[index][i].style.backgroundColor;
+        days[index][i].value = ""; days[index][i].style.backgroundColor = "white";
         if (days[index][i-spaces].classList.contains("not_move")) {spaces--}
-        days[index][i-spaces].value = hold;
+        days[index][i-spaces].value = hold; days[index][i-spaces].style.backgroundColor = holdBG;
         spaces = 0;
       }
     }
@@ -290,17 +316,100 @@ function replaceWithNotMove(e) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 window.addEventListener("beforeunload", (e) => {
-  localStorage.setItem('myData', JSON.stringify([...inputs].map((el) => el.value)));
+  savePlans(0)
+  localStorage.setItem('Data', JSON.stringify(plans));
 })
 window.addEventListener("DOMContentLoaded", (e) => {
-  const storedData = localStorage.getItem('myData');
+  const storedData = localStorage.getItem('Data');
   if (storedData) {
-      const loadedArray = JSON.parse(storedData);
-      for (let i = 0; i < loadedArray.length; i++) {
-        inputs[i].value = loadedArray[i];
-      }
+    plans = JSON.parse(storedData)
   }
+  loadPlans(0)
   days.forEach((e) => {
     replace(e[1])
   })
 })
+
+
+const filter = document.querySelector("#filter");
+const filter_holder = document.querySelector("#filter_holder");
+let filters = [];
+function upd_filters() {
+  [...inputs].forEach((el) => {
+    el.classList.remove('selecting');
+  })
+  filters = [...filter_holder.children].map((el) => {
+    return el.innerHTML.replace('<button class="delete">x</button>', '');
+  });
+  if (filter.value !== "") {filters.push(filter.value);}
+
+  [...inputs].forEach((el) => {
+    filters.forEach((fil) => {
+      if (el.value.includes(fil)) {
+        el.classList.add('selecting')
+      }
+    })
+  })
+}
+
+filter.addEventListener('keyup', (event) => {
+  if (event.key == "Enter") {
+    let el = document.createElement("div");
+    el.innerHTML = `${filter.value}<button class="delete">x</button>`
+    filter_holder.insertAdjacentElement("beforeend", el)
+    el.children[0].addEventListener('click', (ev) => {el.remove(); upd_filters();})
+    filter.value = ''
+  }
+  upd_filters();
+})
+
+
+function createGradient(colorSlider) {
+  const gradientStops = [];
+  for (let i = 0; i <= 360; i++) {
+    gradientStops.push(`hsl(${i}, 100%, 60%)`); // Добавляем цвет для каждого градуса
+  }
+  const gradient = `linear-gradient(to right, ${gradientStops.join(', ')})`;
+  colorSlider.style.background = gradient; // Применяем градиент к слайдеру
+}
+
+
+const backward = document.querySelector("#backward");
+const forward = document.querySelector("#forward"); let now = 0;
+backward.addEventListener("click", (event) => {
+  savePlans(now);
+  getWeek(--now);
+  loadPlans(now)
+})
+forward.addEventListener("click", (event) => {
+  savePlans(now);
+  getWeek(++now);
+  loadPlans(now)
+})
+
+function savePlans(now) {
+    let week = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]).map((e) => e.children[0].children[0].children[0].innerHTML.replaceAll('.', ''))
+    for (let i = 0; i < 7; i++) {
+      plans[week[i]] = JSON.stringify([...days[i]].map((el) => {
+        return (el.value == "" && el.style.backgroundColor =="white")?[]:[el.value,el.style.backgroundColor]
+      }))
+    }
+    console.log(plans)
+}
+function loadPlans(now) {
+  let week = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]).map((e) => e.children[0].children[0].children[0].innerHTML.replaceAll('.', ''))
+  for (let i = 0; i < 7; i++) {
+    if (plans[week[i]]) {
+      let arr = JSON.parse(plans[week[i]]);
+      [...days[i]].forEach((el, i) => {
+        if (arr[i].length > 0) {
+          el.value = arr[i][0]; el.style.backgroundColor = arr[i][1]
+        } else {el.value = ""; el.style.backgroundColor = "white"}
+      }
+      )
+    } else {
+      [...days[i]].forEach((el, i) => {el.value = ""; el.style.backgroundColor = "white"})
+    }
+  }
+  
+}
