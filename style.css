@@ -8,6 +8,7 @@
     flex-direction: row;
     justify-content: space-around;
     padding: 0 20px 0 20px;
+    width: 100%;
 }
 #days-wrapper>*:not(:last-child) {
     padding: 5px;
@@ -82,7 +83,7 @@ input[type="text"]:focus-visible {
     position: absolute;
     padding:2px;
 }
-button {
+.color {
     font-size: 20px;
     border-radius: 3px;
     background-color: white;
@@ -91,7 +92,7 @@ button {
     height: 30px;
     padding: 0 20px 0 20px;
 }
-button div {
+.color div {
     width: 18px;
     height: 18px;
     border: 3px #909090 solid;
@@ -108,11 +109,96 @@ button div {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 20px;
-    padding: 5px;
+    padding: 1px;
     width: 14vw;
     height: 25px;
     border: 3px solid black;
     border-radius: 5px;
     background-color: #8f8f8f;
 }
+
+#filter {
+    border: 3px solid black;
+    border-radius: 5px;
+}
+
+body {
+    padding: 5px;
+}
+.selecting {
+    border: 3px solid grey !important;
+}
+#functional {
+    display: flex;
+    flex-direction: row;
+    gap:30px;
+}
+.filter-wrapper {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap:30px;
+}
+#filter_holder, #filter_holder div {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap:10px;
+}
+#filter_holder div {
+    padding: 3px 7px;
+    background-color: #8f8f8f;
+    border-radius: 5px;
+}
+
+#filter_holder div button{
+    border-radius: 10px;
+    border: none;
+    background-color: #8f8f8f;
+    width: 20px;
+    height: 20px;
+}
+#filter_holder div button:hover{
+    background-color: #696969;
+}
+
+#work-place {
+    display: flex;
+    justify-content: space-between;
+}
+#backward, #forward {
+    width: 1.2%;
+}
+
+
+
+
+
+
+#color-slider {
+    width: 150зв; /* Полная ширина */
+    height: 20px; /* Высота слайдера */
+    appearance: none; /* Убрать стандартные стили */
+    background: transparent; /* Прозрачный фон (градиент будет задан через JS) */
+    border-radius: 10px; /* Закругленные углы */
+    outline: none; /* Убрать контур при фокусе */
+  }
+  
+  #color-slider::-webkit-slider-thumb {
+    appearance: none; /* Убрать стандартные стили */
+    width: 20px; /* Размер ползунка */
+    height: 20px; /* Размер ползунка */
+    background: white; /* Цвет ползунка */
+    border: 2px solid #ccc; /* Граница ползунка */
+    border-radius: 50%; /* Круглый ползунок */
+    cursor: pointer; /* Курсор-указатель */
+  }
+  
+  #color-slider::-moz-range-thumb {
+    width: 20px; /* Размер ползунка */
+    height: 20px; /* Размер ползунка */
+    background: white; /* Цвет ползунка */
+    border: 2px solid #ccc; /* Граница ползунка */
+    border-radius: 50%; /* Круглый ползунок */
+    cursor: pointer; /* Курсор-указатель */
+  }
