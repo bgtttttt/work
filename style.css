@@ -169,6 +169,10 @@ body {
 #backward, #forward {
     width: 1.2%;
 }
+.top h3 {
+    color: #494949;
+    font-size: 25px;
+}
 
 
 
