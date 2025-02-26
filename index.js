@@ -1,3 +1,4 @@
+const dateM = document.querySelector(".top").children[0];
 const getWeek = (weekOffset = 0) => {
   const date = new Date();
   const weekDay = date.getDay();
@@ -38,12 +39,32 @@ const getWeek = (weekOffset = 0) => {
     const currentMonth = currentDate.getMonth();
     const currentMonthDay = currentDate.getDate();
 
-    dateFields[i].innerHTML = `${currentMonthDay}.${(currentMonth + 1) < 10 ? '0' : ''}${currentMonth + 1}`;
+    dateFields[i].innerHTML = `${getMonthName(currentMonth)} ${currentMonthDay}`;
   }
-
+  let d1 = new Date(targetYear, targetMonth, targetMonthDay);
+  let d2 = new Date(targetYear, targetMonth, targetMonthDay + 6)
+  dateM.innerHTML = (d1.getMonth() == d2.getMonth())?getMonthName(d1.getMonth())+" "+d1.getFullYear():
+  getMonthName(d1.getMonth())+" "+d1.getFullYear()+"-"+getMonthName(d2.getMonth())+" "+d2.getFullYear();
   return result;
 };
 getWeek()
+
+function getMonthName(m) {
+  switch(m) {
+    case 0: return "January";
+    case 1: return "February";
+    case 2: return "March";
+    case 3: return "April";
+    case 4: return "May";
+    case 5: return "June";
+    case 6: return "July";
+    case 7: return "August";
+    case 8: return "September";
+    case 9: return "October";
+    case 10: return "November";
+    case 11: return "December";
+  }
+}
 
 function init() {
   let days_wrapper = document.getElementById('days-wrapper');
@@ -105,8 +126,6 @@ function close() {
     a.remove();
   }
 }
-
-
 [...inputs].forEach((e) => {
   let pressTimer; 
   let isDragging = false;
@@ -245,7 +264,7 @@ function replace(e) {
       }
     }
   }
-  
+  upd_filters();
 }
 function getIndex(e) {
   let index = [...daywrapper.children].indexOf(e.parentElement)
@@ -275,6 +294,7 @@ function razdv(e) {
     days[index][i+1+b+k].value = arr[b];
     days[index][i+1+b+k].style.backgroundColor = arrBG[b];
   }
+  upd_filters();
 }
 function reRazdv(e) {
   if (e.classList.contains("not_move")) {return;}
@@ -293,6 +313,7 @@ function reRazdv(e) {
     days[index][i+b].value = arr[b];
     days[index][i+b].style.backgroundColor = arrBG[b];
   }
+  upd_filters();
 }
 function replaceWithNotMove(e) {
   let index = getIndex(e)
@@ -311,7 +332,7 @@ function replaceWithNotMove(e) {
       }
     }
   }
-  
+  upd_filters();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -379,12 +400,14 @@ const forward = document.querySelector("#forward"); let now = 0;
 backward.addEventListener("click", (event) => {
   savePlans(now);
   getWeek(--now);
-  loadPlans(now)
+  loadPlans(now);
+  upd_filters();
 })
 forward.addEventListener("click", (event) => {
   savePlans(now);
   getWeek(++now);
-  loadPlans(now)
+  loadPlans(now);
+  upd_filters();
 })
 
 function savePlans(now) {
@@ -412,4 +435,35 @@ function loadPlans(now) {
     }
   }
   
+}
+
+document.addEventListener('keydown', ev => {
+  if([...inputs].includes(document.activeElement)) {
+    if (["ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft"].includes(ev.key)){
+      let e = ev.target
+      if (ev.key === "ArrowUp" && days[getIndex(e)].indexOf(e) !== 0) {
+        days[getIndex(e)][days[getIndex(e)].indexOf(e)-1].focus();
+        //sat-sun
+      }
+      if (ev.key === "ArrowDown" && days[getIndex(e)].indexOf(e) !== days[getIndex(e)].length-1) {
+        days[getIndex(e)][days[getIndex(e)].indexOf(e)+1].focus();
+        //sat-sun
+      }
+      if (ev.key === "ArrowRight" && isCursorAtEnd(e)) {
+        if (getIndex(e) < 4) {console.log("a")}
+        else if (getIndex(e) >= 4 && getIndex(e) < 5) {console.log("b")}
+        //sat-sun
+        
+        //days[getIndex(e)][days[getIndex(e)].indexOf(e)+1].focus();
+      }
+    }
+  }
+})
+
+function isCursorAtEnd(inputElement) {
+  if (document.activeElement === inputElement) {
+      return inputElement.selectionStart === inputElement.value.length &&
+             inputElement.selectionEnd === inputElement.value.length;
+  }
+  return false;
 }
