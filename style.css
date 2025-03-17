@@ -118,12 +118,13 @@ input[type="text"]:focus-visible {
 }
 
 #filter {
-    border: 3px solid black;
+    border: 3px solid #333333;
     border-radius: 5px;
+    margin: 5px 10px;
 }
 
 body {
-    padding: 5px;
+    padding: 10px;
 }
 .selecting {
     border: 3px solid grey !important;
@@ -147,14 +148,14 @@ body {
 }
 #filter_holder div {
     padding: 3px 7px;
-    background-color: #8f8f8f;
+    background-color: #cccccc;
     border-radius: 5px;
 }
 
 #filter_holder div button{
     border-radius: 10px;
     border: none;
-    background-color: #8f8f8f;
+    background-color: #cccccc;
     width: 20px;
     height: 20px;
 }
@@ -173,6 +174,27 @@ body {
     color: #494949;
     font-size: 25px;
 }
+#deleteBut {
+    background-color: #cccccc;
+    border-radius: 8px;
+    border: 2px solid #bbbbbb;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 5px;
+    margin-top: auto;
+    margin-bottom: 3px;
+}
+.colorP {
+    background-color: #dddddd;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: 5px;
+    border-radius: 5px;
+    border: 2px solid #aaaaaa;
+}
 
 
 
@@ -180,7 +202,7 @@ body {
 
 
 #color-slider {
-    width: 150зв; /* Полная ширина */
+    width: 100%; /* Полная ширина */
     height: 20px; /* Высота слайдера */
     appearance: none; /* Убрать стандартные стили */
     background: transparent; /* Прозрачный фон (градиент будет задан через JS) */
