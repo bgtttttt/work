@@ -89,17 +89,37 @@ days = days.map((el) => {
 })
 
 
+function useState(initialValue) {
+  let state = initialValue;
+
+  function setState(newValue) {
+      state = newValue;
+  }
+
+  function getState() {
+      return state;
+  }
+
+  return [getState, setState];
+}
+const [getE, setE] = useState("")
+
+
 document.querySelector(".main").addEventListener('contextmenu', e => { 
   e.preventDefault()
 });
+let openedOn;
 [...inputs].forEach((e,i) => {
     document.addEventListener('contextmenu', event => {
         if (e == event.target) {
             document.body.insertAdjacentHTML('beforeend', `<div class="contextmenu" style="left: ${event.pageX}px; top: ${event.pageY}px">
-              <div>Color</div>
-              <input type="range" id="color-slider" min="0" max="360" value="0">
+              <div class="colorP">
+                <div>Color</div>
+                <input type="range" id="color-slider" min="0" max="360" value="0">
+              </div>
+              <button id="deleteBut">Delete</button>
               </div>`);
-
+            openedOn = event.target;
             const colorSlider = document.getElementById('color-slider');
             createGradient(colorSlider);
             colorSlider.addEventListener('input', () => {
@@ -117,7 +137,7 @@ document.querySelector(".main").addEventListener('contextmenu', e => {
 document.addEventListener('mousedown', e => {
   let toclose = document.querySelector(".contextmenu");
   if (!(toclose==e.target | [...((toclose?.querySelectorAll('*')) || [])].includes(e.target))) {close()}
-  
+  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor="white"; openedOn = null;}
 })
 window.addEventListener('resize', e => close())
 function close() {
@@ -126,6 +146,7 @@ function close() {
     a.remove();
   }
 }
+
 [...inputs].forEach((e) => {
   let pressTimer; 
   let isDragging = false;
@@ -156,6 +177,7 @@ function close() {
 
   e.addEventListener('change', (event) => {upd_filters()})
 });
+let draggedElem = null;
 function startDrag(e, event) {
   let coords = getCoords(e);
   let shiftX = event.pageX - coords.left;
@@ -174,10 +196,13 @@ function startDrag(e, event) {
   elem.style.border = "2px solid #b0b0b0";
   elem.style.minWidth = window.getComputedStyle(e).width;
 
+  setE(elem)
+
   document.body.appendChild(elem);
   moveAt(event);
   elem.style.zIndex = 1000;
 
+  draggedElem = elem;
   function moveAt(event) {
     elem.style.left = event.pageX - shiftX + 'px';
     elem.style.top = event.pageY - shiftY + 'px';
@@ -202,35 +227,28 @@ function startDrag(e, event) {
       }
       
     }
-
     moveAt(e);
   };
 
   elem.onmouseup = function (s) {
     let elementP = null;
-    if (document.elementsFromPoint(s.clientX, s.clientY)[1].id === "close") {
-      holder = "";
-      days.forEach((d) => { replace(d[0]); });
-      [...inputs].forEach((el) => {el.style.border = "none"});
-      upd_filters()
-    } else {
-      if (onElem === null && [...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {onElem = document.elementsFromPoint(s.clientX, s.clientY)[1]}
+    if (onElem === null && [...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {onElem = document.elementsFromPoint(s.clientX, s.clientY)[1]}
       if (onElem) {
         onElem.style.border = "none";
         if ([...inputs].includes(document.elementsFromPoint(s.clientX, s.clientY)[1])) {
           elementP = document.elementsFromPoint(s.clientX, s.clientY)[1]
-          elementP.value = holder;
+          elementP.value = holder === getE.value?holder:getE().value;
           elementP.style.backgroundColor = elem.style.backgroundColor;
         } else {
-          e.value = holder;
+          e.value = holder === getE.value?holder:getE().value;
           e.style.backgroundColor = elem.style.backgroundColor;
         }
       }
-    }
 
     e.classList.remove("not_move")
     elem.remove();
     if (elementP) { replace(elementP); replace(e)}
+    draggedElem = null;
     document.onmousemove = null;  
     e.onmouseup = null;
   };
@@ -254,7 +272,7 @@ function replace(e) {
   for (let a = 0; a<days[index].length; a++) {
     let spaces = 0;
     for (let i = 0; i < days[index].length; i++) {
-      if (days[index][i].value === "") {
+      if (days[index][i].value === "" && days[index][i].style.backgroundColor === "white") {
        spaces++;
       } else {
         let hold = days[index][i].value; holdBG = days[index][i].style.backgroundColor;
@@ -283,7 +301,7 @@ function razdv(e) {
   let arr = [], pl = 0, arrBG = []
   for (let a = i; a< days[index].length; a++) {
     if (days[index][a].classList.contains("not_move")) {pl++; continue}
-    if (days[index][a].value === "") {
+    if (days[index][a].value === "" && days[index][a].style.backgroundColor === "white") {
       break
     }
     arr[a-i-pl] = days[index][a].value; arrBG[a-i-pl] = days[index][a].style.backgroundColor;
@@ -302,7 +320,7 @@ function reRazdv(e) {
   let i = days[index].indexOf(e);
   let arr = [], arrBG = [];
   for (let a = i+1; a< days[index].length; a++) {
-    if (days[index][a].value === "") {
+    if (days[index][a].value === "" && days[index][a].style.backgroundColor === "white") {
       break
     }
     arr[a-i-1] = days[index][a].value; arrBG[a-i-1] = days[index][a].style.backgroundColor;
@@ -321,7 +339,7 @@ function replaceWithNotMove(e) {
   for (let a = 0; a<days[index].length; a++) {
     let spaces = 0;
     for (let i = 0; i < days[index].length; i++) {
-      if (days[index][i].value === "") {
+      if (days[index][i].value === "" && days[index][i].style.backgroundColor === "white") {
        spaces++;
       } else {
         let hold = days[index][i].value, holdBG = days[index][i].style.backgroundColor;
@@ -437,28 +455,70 @@ function loadPlans(now) {
   
 }
 
-document.addEventListener('keydown', ev => {
-  if([...inputs].includes(document.activeElement)) {
-    if (["ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft"].includes(ev.key)){
-      let e = ev.target
-      if (ev.key === "ArrowUp" && days[getIndex(e)].indexOf(e) !== 0) {
-        days[getIndex(e)][days[getIndex(e)].indexOf(e)-1].focus();
-        //sat-sun
-      }
-      if (ev.key === "ArrowDown" && days[getIndex(e)].indexOf(e) !== days[getIndex(e)].length-1) {
-        days[getIndex(e)][days[getIndex(e)].indexOf(e)+1].focus();
-        //sat-sun
-      }
-      if (ev.key === "ArrowRight" && isCursorAtEnd(e)) {
-        if (getIndex(e) < 4) {console.log("a")}
-        else if (getIndex(e) >= 4 && getIndex(e) < 5) {console.log("b")}
-        //sat-sun
-        
-        //days[getIndex(e)][days[getIndex(e)].indexOf(e)+1].focus();
+let clipboardData = null;
+document.addEventListener('keydown', (ev) => {
+  const activeElement = document.activeElement;
+  const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft"];
+  const kbKeys = ["c", "v"];
+
+  if (!arrowKeys.includes(ev.key) && !kbKeys.includes((ev.key).toLowerCase())) return;
+
+  if (ev.ctrlKey) {
+    if (document.hasFocus()) {document.activeElement.blur()};
+    if (ev.key === 'c' && draggedElem !== null) {
+      clipboardData = [getE().value, getE().style.backgroundColor];
+    } else if (ev.key === 'v' && draggedElem !== null) {
+      if (clipboardData !== null) {
+        let a = getE(); a.value = clipboardData[0]; a.style.backgroundColor = clipboardData[1];
+        setE(a);
       }
     }
+    return;
   }
-})
+
+  const currentElement = ev.target;
+  const currentIndex = getIndex(currentElement);
+  const currentDay = days[currentIndex];
+  const elementPosition = currentDay.indexOf(currentElement);
+
+  if (ev.key === "ArrowUp") {
+    if (elementPosition > 0) {
+      currentDay[elementPosition - 1].focus();
+    } else if (currentIndex === 6 && elementPosition === 0) {
+      days[currentIndex - 1][days[currentIndex - 1].length - 1].focus();
+    }
+    ev.preventDefault();
+  }
+
+  if (ev.key === "ArrowDown") {
+    if (elementPosition < currentDay.length - 1) {
+      currentDay[elementPosition + 1].focus();
+    } else if (currentIndex === 5 && elementPosition === currentDay.length - 1) {
+      days[currentIndex + 1][0].focus();
+    }
+    ev.preventDefault();
+  }
+
+  if (ev.key === "ArrowRight" && isCursorAtEnd(currentElement)) {
+    if (currentIndex < 4) {
+      days[currentIndex + 1][elementPosition].focus();
+    } else if (currentIndex >= 4 && currentIndex < 5) {
+      const newIndex = Math.floor(elementPosition / 5);
+      days[5 + newIndex][elementPosition % 5].focus();
+    }
+    ev.preventDefault();
+  }
+
+  if (ev.key === "ArrowLeft" && isCursorAtStart(currentElement)) {
+    if (currentIndex < 5) {
+      days[currentIndex - 1][elementPosition].focus();
+    } else if (currentIndex > 4) {
+      const newIndex = 5 * (currentIndex - 5) + elementPosition;
+      days[4][newIndex].focus();
+    }
+    ev.preventDefault();
+  }
+});
 
 function isCursorAtEnd(inputElement) {
   if (document.activeElement === inputElement) {
@@ -467,3 +527,11 @@ function isCursorAtEnd(inputElement) {
   }
   return false;
 }
+function isCursorAtStart(inputElement) {
+  if (document.activeElement === inputElement) {
+      return inputElement.selectionStart === 0 &&
+             inputElement.selectionEnd === 0;
+  }
+  return false;
+}
+
