@@ -283,6 +283,9 @@ input:checked + .slider:before {
 .text-color-change * {
   color: inherit !important;
 }
+.filter-color-change {
+    color: #000000 !important;
+}
 
 #backward, #forward {
     position:sticky;
