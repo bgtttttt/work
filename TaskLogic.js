@@ -49,6 +49,7 @@ const getWeek = (weekOffset = 0) => {
 };
 getWeek()
 
+let isBlack = false;
 function getMonthName(m) {
   switch(m) {
     case 0: return "January";
@@ -72,7 +73,7 @@ function init() {
   days_wrapper = ([...days_wrapper.children].splice(0,5)).concat([...sat_sun.children])
     days_wrapper.forEach(e => {
         for (let i = 0; i < Math.floor(e.offsetHeight*0.7)/30; i++) {
-            e.insertAdjacentHTML('beforeend', '<input type="text" class="input"><hr id="hr">')
+            e.insertAdjacentHTML('beforeend', '<input type="text" class="input"><hr id="hr" class="hrs">')
         }
     });
 }
@@ -137,7 +138,7 @@ let openedOn;
 document.addEventListener('mousedown', e => {
   let toclose = document.querySelector(".contextmenu");
   if (!(toclose==e.target | [...((toclose?.querySelectorAll('*')) || [])].includes(e.target))) {close()}
-  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor="white"; openedOn = null;}
+  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor=(isBlack?"rgb(56, 56, 56)":"white"); openedOn = null;}
 })
 window.addEventListener('resize', e => close())
 function close() {
@@ -188,7 +189,7 @@ function startDrag(e, event) {
   elem.style.backgroundColor = e.style.backgroundColor;
   let holder = e.value;
   e.value = "";
-  e.style.backgroundColor = "white"
+  e.style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white")
   e.classList.add("not_move")
   e.insertAdjacentElement("afterend", elem);
 
@@ -272,11 +273,11 @@ function replace(e) {
   for (let a = 0; a<days[index].length; a++) {
     let spaces = 0;
     for (let i = 0; i < days[index].length; i++) {
-      if (days[index][i].value === "" && days[index][i].style.backgroundColor === "white") {
+      if (days[index][i].value === "" && days[index][i].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
        spaces++;
       } else {
         let hold = days[index][i].value; holdBG = days[index][i].style.backgroundColor;
-        days[index][i].value = ""; days[index][i].style.backgroundColor = "white";
+        days[index][i].value = ""; days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white");
         days[index][i-spaces].value = hold; days[index][i-spaces].style.backgroundColor = holdBG;
         spaces = 0;
       }
@@ -301,12 +302,12 @@ function razdv(e) {
   let arr = [], pl = 0, arrBG = []
   for (let a = i; a< days[index].length; a++) {
     if (days[index][a].classList.contains("not_move")) {pl++; continue}
-    if (days[index][a].value === "" && days[index][a].style.backgroundColor === "white") {
+    if (days[index][a].value === "" && days[index][a].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
       break
     }
     arr[a-i-pl] = days[index][a].value; arrBG[a-i-pl] = days[index][a].style.backgroundColor;
   }
-  days[index][i].value = ""; days[index][i].style.backgroundColor = "white"; let k = 0;
+  days[index][i].value = ""; days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white"); let k = 0;
   for (let b = 0; b < arr.length; b++) {
     if (days[index][i+1+b].classList.contains("not_move")) {k++}
     days[index][i+1+b+k].value = arr[b];
@@ -320,12 +321,12 @@ function reRazdv(e) {
   let i = days[index].indexOf(e);
   let arr = [], arrBG = [];
   for (let a = i+1; a< days[index].length; a++) {
-    if (days[index][a].value === "" && days[index][a].style.backgroundColor === "white") {
+    if (days[index][a].value === "" && days[index][a].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
       break
     }
     arr[a-i-1] = days[index][a].value; arrBG[a-i-1] = days[index][a].style.backgroundColor;
   }
-  days[index][i+arr.length].value = ""; days[index][i+arr.length].style.backgroundColor = "white";
+  days[index][i+arr.length].value = ""; days[index][i+arr.length].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white");
   for (let b = 0; b < arr.length; b++) {
     if (days[index][i+1+b].classList.contains("not_move")) {i++}
     days[index][i+b].value = arr[b];
@@ -339,11 +340,11 @@ function replaceWithNotMove(e) {
   for (let a = 0; a<days[index].length; a++) {
     let spaces = 0;
     for (let i = 0; i < days[index].length; i++) {
-      if (days[index][i].value === "" && days[index][i].style.backgroundColor === "white") {
+      if (days[index][i].value === "" && days[index][i].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
        spaces++;
       } else {
         let hold = days[index][i].value, holdBG = days[index][i].style.backgroundColor;
-        days[index][i].value = ""; days[index][i].style.backgroundColor = "white";
+        days[index][i].value = ""; days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white");
         if (days[index][i-spaces].classList.contains("not_move")) {spaces--}
         days[index][i-spaces].value = hold; days[index][i-spaces].style.backgroundColor = holdBG;
         spaces = 0;
@@ -355,18 +356,23 @@ function replaceWithNotMove(e) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 window.addEventListener("beforeunload", (e) => {
+  
   savePlans(0)
+  console.log(plans)
   localStorage.setItem('Data', JSON.stringify(plans));
+  localStorage.setItem('Color', isBlack);
 })
 window.addEventListener("DOMContentLoaded", (e) => {
   const storedData = localStorage.getItem('Data');
   if (storedData) {
     plans = JSON.parse(storedData)
   }
+  
   loadPlans(0)
   days.forEach((e) => {
     replace(e[1])
   })
+  if(localStorage.getItem('Color') === "true") {console.log(localStorage.getItem('Color'));colSw(true)}
 })
 
 
@@ -432,7 +438,7 @@ function savePlans(now) {
     let week = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]).map((e) => e.children[0].children[0].children[0].innerHTML.replaceAll('.', ''))
     for (let i = 0; i < 7; i++) {
       plans[week[i]] = JSON.stringify([...days[i]].map((el) => {
-        return (el.value == "" && el.style.backgroundColor =="white")?[]:[el.value,el.style.backgroundColor]
+        return (el.value == "" && el.style.backgroundColor ==(isBlack?"rgb(56, 56, 56)":"white"))?[]:[el.value,el.style.backgroundColor]
       }))
     }
     console.log(plans)
@@ -445,11 +451,11 @@ function loadPlans(now) {
       [...days[i]].forEach((el, i) => {
         if (arr[i].length > 0) {
           el.value = arr[i][0]; el.style.backgroundColor = arr[i][1]
-        } else {el.value = ""; el.style.backgroundColor = "white"}
+        } else {el.value = ""; el.style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white")}
       }
       )
     } else {
-      [...days[i]].forEach((el, i) => {el.value = ""; el.style.backgroundColor = "white"})
+      [...days[i]].forEach((el, i) => {el.value = ""; el.style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white")})
     }
   }
   
