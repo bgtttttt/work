@@ -13,6 +13,8 @@ function colSw(bl) {
         document.body.style.backgroundColor = "#333333";
         backward.style.backgroundColor="#333333"
         forward.style.backgroundColor="#333333"
+        filter.style.backgroundColor="#aaaaaa"
+        filter.classList.add("filter-color-change");
         document.body.classList.add("text-color-change");
         [...inputsL].forEach(element => {
             element.style.backgroundColor="#383838"
@@ -29,6 +31,8 @@ function colSw(bl) {
         document.body.style.backgroundColor = "white";
         backward.style.backgroundColor="#f0f0f0"
         forward.style.backgroundColor="#f0f0f0"
+        filter.style.backgroundColor="white"
+        filter.classList.remove("filter-color-change");
         document.body.classList.remove("text-color-change");
         [...inputsL].forEach(element => {
             element.style.backgroundColor="white"
