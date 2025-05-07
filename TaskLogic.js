@@ -1,72 +1,5 @@
-const dateM = document.querySelector(".top").children[0];
-const getWeek = (weekOffset = 0) => {
-  const date = new Date();
-  const weekDay = date.getDay();
-  const monthDay = date.getDate();
-  const month = date.getMonth();
-  const year = date.getFullYear();
-  const dates = document.getElementsByClassName("day-top");
-  const dateFields = [...dates].map(element => element.children[0]);
-  const countDayOnMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-  // Проверка на високосный год
-  if ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) {
-    countDayOnMonth[1] = 29;
-  }
-
-  let result = [];
-  // День месяца, понедельника текущей недели
-  let countMonthDay;
-
-  // Проверка чтобы всегда начинать выставлять текущую неделю с понедельника
-  if (weekDay > 1) {
-    countMonthDay = monthDay - (weekDay - 1);
-  } else if (weekDay === 0) {
-    countMonthDay = monthDay - 6;
-  } else {
-    countMonthDay = monthDay;
-  }
-
-  // Корректировка даты на указанное количество недель
-  const targetDate = new Date(year, month, countMonthDay + weekOffset * 7);
-  const targetMonth = targetDate.getMonth();
-  const targetYear = targetDate.getFullYear();
-  const targetMonthDay = targetDate.getDate();
-
-  // Построение итогового массива
-  for (let i = 0; i < 7; i++) {
-    const currentDate = new Date(targetYear, targetMonth, targetMonthDay + i);
-    const currentMonth = currentDate.getMonth();
-    const currentMonthDay = currentDate.getDate();
-
-    dateFields[i].innerHTML = `${getMonthName(currentMonth)} ${currentMonthDay}`;
-  }
-  let d1 = new Date(targetYear, targetMonth, targetMonthDay);
-  let d2 = new Date(targetYear, targetMonth, targetMonthDay + 6)
-  dateM.innerHTML = (d1.getMonth() == d2.getMonth())?getMonthName(d1.getMonth())+" "+d1.getFullYear():
-  getMonthName(d1.getMonth())+" "+d1.getFullYear()+"-"+getMonthName(d2.getMonth())+" "+d2.getFullYear();
-  return result;
-};
 getWeek()
-
 let isBlack = false;
-function getMonthName(m) {
-  switch(m) {
-    case 0: return "January";
-    case 1: return "February";
-    case 2: return "March";
-    case 3: return "April";
-    case 4: return "May";
-    case 5: return "June";
-    case 6: return "July";
-    case 7: return "August";
-    case 8: return "September";
-    case 9: return "October";
-    case 10: return "November";
-    case 11: return "December";
-  }
-}
-
 function init() {
   let days_wrapper = document.getElementById('days-wrapper');
   const sat_sun = document.getElementsByClassName("sat-sun")[0];
@@ -138,7 +71,7 @@ let openedOn;
 document.addEventListener('mousedown', e => {
   let toclose = document.querySelector(".contextmenu");
   if (!(toclose==e.target | [...((toclose?.querySelectorAll('*')) || [])].includes(e.target))) {close()}
-  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor=(isBlack?"rgb(56, 56, 56)":"white"); openedOn = null;}
+  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor=(isBlack?"rgb(56, 56, 56)":"white"); replace(openedOn); openedOn = null;}
 })
 window.addEventListener('resize', e => close())
 function close() {
@@ -301,13 +234,17 @@ function razdv(e) {
   let i = days[index].indexOf(e);
   let arr = [], pl = 0, arrBG = []
   for (let a = i; a< days[index].length; a++) {
-    if (days[index][a].classList.contains("not_move")) {pl++; continue}
-    if (days[index][a].value === "" && days[index][a].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
+    if (days[index][a]?.classList.contains("not_move")) {pl++; continue}
+    if (days[index][a]?.value === "" && days[index][a]?.style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
       break
     }
-    arr[a-i-pl] = days[index][a].value; arrBG[a-i-pl] = days[index][a].style.backgroundColor;
+    arr[a-i-pl] = days[index][a]?.value; arrBG[a-i-pl] = days[index][a]?.style.backgroundColor; 
   }
-  days[index][i].value = ""; days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white"); let k = 0;
+  if(days[index][i]) {
+    days[index][i].value = ""; 
+    days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white"); 
+  }
+  let k = 0;
   for (let b = 0; b < arr.length; b++) {
     if (days[index][i+1+b].classList.contains("not_move")) {k++}
     days[index][i+1+b+k].value = arr[b];
@@ -326,11 +263,17 @@ function reRazdv(e) {
     }
     arr[a-i-1] = days[index][a].value; arrBG[a-i-1] = days[index][a].style.backgroundColor;
   }
-  days[index][i+arr.length].value = ""; days[index][i+arr.length].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white");
+  console.log(index)
+  if(days[index][i+arr.length]){
+    days[index][i+arr.length].value = ""; 
+    days[index][i+arr.length].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white"); 
+  }
   for (let b = 0; b < arr.length; b++) {
     if (days[index][i+1+b].classList.contains("not_move")) {i++}
-    days[index][i+b].value = arr[b];
-    days[index][i+b].style.backgroundColor = arrBG[b];
+    if (days[index][i+b]) {
+      days[index][i+b].value = arr[b];
+      days[index][i+b].style.backgroundColor = arrBG[b];
+    }
   }
   upd_filters();
 }
@@ -357,8 +300,7 @@ function replaceWithNotMove(e) {
 
 window.addEventListener("beforeunload", (e) => {
   
-  savePlans(0)
-  console.log(plans)
+  savePlans()
   localStorage.setItem('Data', JSON.stringify(plans));
   localStorage.setItem('Color', isBlack);
 })
@@ -368,14 +310,14 @@ window.addEventListener("DOMContentLoaded", (e) => {
     plans = JSON.parse(storedData)
   }
   
-  loadPlans(0)
+  loadPlans()
   days.forEach((e) => {
     replace(e[1])
   })
-  if(localStorage.getItem('Color') === "true") {console.log(localStorage.getItem('Color'));colSw(true)}
+  if(localStorage.getItem('Color') === "true") {colSw(true)}
 })
 
-
+/*
 const filter = document.querySelector("#filter");
 const filter_holder = document.querySelector("#filter_holder");
 let filters = [];
@@ -396,7 +338,7 @@ function upd_filters() {
     })
   })
 }
-
+*/
 filter.addEventListener('keyup', (event) => {
   if (event.key == "Enter") {
     let el = document.createElement("div");
@@ -422,44 +364,17 @@ function createGradient(colorSlider) {
 const backward = document.querySelector("#backward");
 const forward = document.querySelector("#forward"); let now = 0;
 backward.addEventListener("click", (event) => {
-  savePlans(now);
+  savePlans();
   getWeek(--now);
-  loadPlans(now);
+  loadPlans();
   upd_filters();
 })
 forward.addEventListener("click", (event) => {
-  savePlans(now);
+  savePlans();
   getWeek(++now);
-  loadPlans(now);
+  loadPlans();
   upd_filters();
 })
-
-function savePlans(now) {
-    let week = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]).map((e) => e.children[0].children[0].children[0].innerHTML.replaceAll('.', ''))
-    for (let i = 0; i < 7; i++) {
-      plans[week[i]] = JSON.stringify([...days[i]].map((el) => {
-        return (el.value == "" && el.style.backgroundColor ==(isBlack?"rgb(56, 56, 56)":"white"))?[]:[el.value,el.style.backgroundColor]
-      }))
-    }
-    console.log(plans)
-}
-function loadPlans(now) {
-  let week = ([...daywrapper.children].splice(0,5)).concat([...daywrapper.children[5].children]).map((e) => e.children[0].children[0].children[0].innerHTML.replaceAll('.', ''))
-  for (let i = 0; i < 7; i++) {
-    if (plans[week[i]]) {
-      let arr = JSON.parse(plans[week[i]]);
-      [...days[i]].forEach((el, i) => {
-        if (arr[i].length > 0) {
-          el.value = arr[i][0]; el.style.backgroundColor = arr[i][1]
-        } else {el.value = ""; el.style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white")}
-      }
-      )
-    } else {
-      [...days[i]].forEach((el, i) => {el.value = ""; el.style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white")})
-    }
-  }
-  
-}
 
 let clipboardData = null;
 document.addEventListener('keydown', (ev) => {
@@ -485,7 +400,7 @@ document.addEventListener('keydown', (ev) => {
   const currentElement = ev.target;
   const currentIndex = getIndex(currentElement);
   const currentDay = days[currentIndex];
-  const elementPosition = currentDay.indexOf(currentElement);
+  const elementPosition = currentDay?.indexOf(currentElement ?? 0);
 
   if (ev.key === "ArrowUp") {
     if (elementPosition > 0) {
@@ -525,19 +440,3 @@ document.addEventListener('keydown', (ev) => {
     ev.preventDefault();
   }
 });
-
-function isCursorAtEnd(inputElement) {
-  if (document.activeElement === inputElement) {
-      return inputElement.selectionStart === inputElement.value.length &&
-             inputElement.selectionEnd === inputElement.value.length;
-  }
-  return false;
-}
-function isCursorAtStart(inputElement) {
-  if (document.activeElement === inputElement) {
-      return inputElement.selectionStart === 0 &&
-             inputElement.selectionEnd === 0;
-  }
-  return false;
-}
-
