@@ -1,15 +1,5 @@
 getWeek()
 let isBlack = false;
-function init() {
-  let days_wrapper = document.getElementById('days-wrapper');
-  const sat_sun = document.getElementsByClassName("sat-sun")[0];
-  days_wrapper = ([...days_wrapper.children].splice(0,5)).concat([...sat_sun.children])
-    days_wrapper.forEach(e => {
-        for (let i = 0; i < Math.floor(e.offsetHeight*0.7)/30; i++) {
-            e.insertAdjacentHTML('beforeend', '<input type="text" class="input"><hr id="hr" class="hrs">')
-        }
-    });
-}
 init()
 
 plans = {}
@@ -22,20 +12,6 @@ days = days.map((el) => {
  return [...el.children].filter((e) => [...inputs].includes(e))
 })
 
-
-function useState(initialValue) {
-  let state = initialValue;
-
-  function setState(newValue) {
-      state = newValue;
-  }
-
-  function getState() {
-      return state;
-  }
-
-  return [getState, setState];
-}
 const [getE, setE] = useState("")
 
 
@@ -71,15 +47,10 @@ let openedOn;
 document.addEventListener('mousedown', e => {
   let toclose = document.querySelector(".contextmenu");
   if (!(toclose==e.target | [...((toclose?.querySelectorAll('*')) || [])].includes(e.target))) {close()}
-  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor=(isBlack?"rgb(56, 56, 56)":"white"); replace(openedOn); openedOn = null;}
+  if (document.elementsFromPoint(e.clientX, e.clientY)[0].id === "deleteBut") {openedOn.value = ""; openedOn.style.backgroundColor=(isBlack?"rgb(56, 56, 56)":"white"); replace(openedOn); openedOn = null; close()}
 })
-window.addEventListener('resize', e => close())
-function close() {
-  let toclose = document.getElementsByClassName("contextmenu");
-  for (let a of toclose) {
-    a.remove();
-  }
-}
+window.addEventListener('resize', e => close());
+
 
 [...inputs].forEach((e) => {
   let pressTimer; 
@@ -189,114 +160,9 @@ function startDrag(e, event) {
 
   elem.addEventListener("dragstart", (ev) => ev.preventDefault());
 }
-function getCoords(elem) {
-  let box = elem.getBoundingClientRect();
-  return {
-    top: box.top,
-    left: box.left
-  };
-}
-
 [...inputs].forEach((e,i) => {
   e.addEventListener('change', (event) => replace(e))
 })
-function replace(e) {
-  let index = getIndex(e)
-  
-  for (let a = 0; a<days[index].length; a++) {
-    let spaces = 0;
-    for (let i = 0; i < days[index].length; i++) {
-      if (days[index][i].value === "" && days[index][i].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
-       spaces++;
-      } else {
-        let hold = days[index][i].value; holdBG = days[index][i].style.backgroundColor;
-        days[index][i].value = ""; days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white");
-        days[index][i-spaces].value = hold; days[index][i-spaces].style.backgroundColor = holdBG;
-        spaces = 0;
-      }
-    }
-  }
-  upd_filters();
-}
-function getIndex(e) {
-  let index = [...daywrapper.children].indexOf(e.parentElement)
-  if (index === -1) {
-    index = [...daywrapper.children].indexOf(e.parentElement.parentElement) + [...e.parentElement.parentElement.children].indexOf(e.parentElement)
-  }
-  return index;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-function razdv(e) {
-  replaceWithNotMove(e);
-  if (e.classList.contains("not_move")) {return;}
-  let index = getIndex(e);
-  let i = days[index].indexOf(e);
-  let arr = [], pl = 0, arrBG = []
-  for (let a = i; a< days[index].length; a++) {
-    if (days[index][a]?.classList.contains("not_move")) {pl++; continue}
-    if (days[index][a]?.value === "" && days[index][a]?.style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
-      break
-    }
-    arr[a-i-pl] = days[index][a]?.value; arrBG[a-i-pl] = days[index][a]?.style.backgroundColor; 
-  }
-  if(days[index][i]) {
-    days[index][i].value = ""; 
-    days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white"); 
-  }
-  let k = 0;
-  for (let b = 0; b < arr.length; b++) {
-    if (days[index][i+1+b].classList.contains("not_move")) {k++}
-    days[index][i+1+b+k].value = arr[b];
-    days[index][i+1+b+k].style.backgroundColor = arrBG[b];
-  }
-  upd_filters();
-}
-function reRazdv(e) {
-  if (e.classList.contains("not_move")) {return;}
-  let index = getIndex(e);
-  let i = days[index].indexOf(e);
-  let arr = [], arrBG = [];
-  for (let a = i+1; a< days[index].length; a++) {
-    if (days[index][a].value === "" && days[index][a].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
-      break
-    }
-    arr[a-i-1] = days[index][a].value; arrBG[a-i-1] = days[index][a].style.backgroundColor;
-  }
-  console.log(index)
-  if(days[index][i+arr.length]){
-    days[index][i+arr.length].value = ""; 
-    days[index][i+arr.length].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white"); 
-  }
-  for (let b = 0; b < arr.length; b++) {
-    if (days[index][i+1+b].classList.contains("not_move")) {i++}
-    if (days[index][i+b]) {
-      days[index][i+b].value = arr[b];
-      days[index][i+b].style.backgroundColor = arrBG[b];
-    }
-  }
-  upd_filters();
-}
-function replaceWithNotMove(e) {
-  let index = getIndex(e)
-  
-  for (let a = 0; a<days[index].length; a++) {
-    let spaces = 0;
-    for (let i = 0; i < days[index].length; i++) {
-      if (days[index][i].value === "" && days[index][i].style.backgroundColor === (isBlack?"rgb(56, 56, 56)":"white")) {
-       spaces++;
-      } else {
-        let hold = days[index][i].value, holdBG = days[index][i].style.backgroundColor;
-        days[index][i].value = ""; days[index][i].style.backgroundColor = (isBlack?"rgb(56, 56, 56)":"white");
-        if (days[index][i-spaces].classList.contains("not_move")) {spaces--}
-        days[index][i-spaces].value = hold; days[index][i-spaces].style.backgroundColor = holdBG;
-        spaces = 0;
-      }
-    }
-  }
-  upd_filters();
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 window.addEventListener("beforeunload", (e) => {
   
@@ -317,28 +183,7 @@ window.addEventListener("DOMContentLoaded", (e) => {
   if(localStorage.getItem('Color') === "true") {colSw(true)}
 })
 
-/*
-const filter = document.querySelector("#filter");
-const filter_holder = document.querySelector("#filter_holder");
-let filters = [];
-function upd_filters() {
-  [...inputs].forEach((el) => {
-    el.classList.remove('selecting');
-  })
-  filters = [...filter_holder.children].map((el) => {
-    return el.innerHTML.replace('<button class="delete">x</button>', '');
-  });
-  if (filter.value !== "") {filters.push(filter.value);}
 
-  [...inputs].forEach((el) => {
-    filters.forEach((fil) => {
-      if (el.value.includes(fil)) {
-        el.classList.add('selecting')
-      }
-    })
-  })
-}
-*/
 filter.addEventListener('keyup', (event) => {
   if (event.key == "Enter") {
     let el = document.createElement("div");
@@ -349,16 +194,6 @@ filter.addEventListener('keyup', (event) => {
   }
   upd_filters();
 })
-
-
-function createGradient(colorSlider) {
-  const gradientStops = [];
-  for (let i = 0; i <= 360; i++) {
-    gradientStops.push(`hsl(${i}, 100%, 60%)`); // Добавляем цвет для каждого градуса
-  }
-  const gradient = `linear-gradient(to right, ${gradientStops.join(', ')})`;
-  colorSlider.style.background = gradient; // Применяем градиент к слайдеру
-}
 
 
 const backward = document.querySelector("#backward");
